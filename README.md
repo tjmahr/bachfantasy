@@ -31,17 +31,17 @@ scores <- googlesheets::gs_read_csv(sheet, "Contestant Scores")
 scores
 #> # A tibble: 31 x 13
 #>    Contestant   Ep1   Ep2   Ep3   Ep4   Ep5   Ep6   Ep7   Ep8   Ep9  Ep10
-#>         <chr> <int> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl>
-#>  1       Adam    25    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  2       Alex    35    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  3    Anthony    25    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  4   Blake E.    40    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  5   Blake K.     0    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  6      Brady    25    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  7      Bryan    45    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  8      Bryce    30    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#>  9       Dean    30    NA    NA    NA    NA    NA    NA    NA    NA    NA
-#> 10    DeMario    35    NA    NA    NA    NA    NA    NA    NA    NA    NA
+#>         <chr> <int> <int> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl> <lgl>
+#>  1       Adam    25    10    NA    NA    NA    NA    NA    NA    NA    NA
+#>  2       Alex    35    15    NA    NA    NA    NA    NA    NA    NA    NA
+#>  3    Anthony    25     0    NA    NA    NA    NA    NA    NA    NA    NA
+#>  4   Blake E.    40    45    NA    NA    NA    NA    NA    NA    NA    NA
+#>  5   Blake K.     0     0    NA    NA    NA    NA    NA    NA    NA    NA
+#>  6      Brady    25     0    NA    NA    NA    NA    NA    NA    NA    NA
+#>  7      Bryan    45    10    NA    NA    NA    NA    NA    NA    NA    NA
+#>  8      Bryce    30     0    NA    NA    NA    NA    NA    NA    NA    NA
+#>  9       Dean    30    55    NA    NA    NA    NA    NA    NA    NA    NA
+#> 10    DeMario    35    85    NA    NA    NA    NA    NA    NA    NA    NA
 #> # ... with 21 more rows, and 2 more variables: Ep11 <lgl>, `Season
 #> #   Total` <int>
 ```
@@ -49,8 +49,8 @@ scores
 Create some mock data to prototype for future plots.
 
 ``` r
-scores$Ep2 <- sample(scores$Ep1, replace = TRUE)
-scores$Ep3 <- sample(scores$Ep2, replace = TRUE)
+# scores$Ep2 <- sample(scores$Ep1, replace = TRUE)
+# scores$Ep3 <- sample(scores$Ep2, replace = TRUE)
 ```
 
 Clean the scores into a long-format table.
@@ -65,7 +65,9 @@ scores_long <- scores %>%
   # Convert to long format
   gather(Episode, Score, -Contestant) %>% 
   # Extract the number from the episode
-  extract(Episode, into = c("Episode"), regex = "(\\d+)", convert = TRUE)
+  extract(Episode, into = c("Episode"), regex = "(\\d+)", convert = TRUE) %>% 
+  # Replace NAs with 0s
+  replace_na(replace = list(Score = 0))
 
 # Add cumulative scores for each contestant
 scores_long <- scores_long %>% 
@@ -73,21 +75,6 @@ scores_long <- scores_long %>%
   group_by(Contestant) %>% 
   mutate(RunningScore = cumsum(Score)) %>% 
   ungroup()
-scores_long
-#> # A tibble: 93 x 4
-#>    Contestant Episode Score RunningScore
-#>         <chr>   <int> <int>        <int>
-#>  1       Adam       1    25           25
-#>  2       Adam       2     0           25
-#>  3       Adam       3    35           60
-#>  4       Alex       1    35           35
-#>  5       Alex       2    30           65
-#>  6       Alex       3     0           65
-#>  7    Anthony       1    25           25
-#>  8    Anthony       2     5           30
-#>  9    Anthony       3     0           30
-#> 10   Blake E.       1    40           40
-#> # ... with 83 more rows
 ```
 
 Create a long-format table of the rosters.
@@ -138,6 +125,22 @@ ggplot(league_sums) +
 ```
 
 ![](README_files/figure-markdown_github/unnamed-chunk-6-1.png)
+
+``` r
+
+knitr::kable(league_sums)
+```
+
+| Player |  Episode|  Score|
+|:-------|--------:|------:|
+| Amanda |        1|    260|
+| Amanda |        2|    470|
+| David  |        1|    235|
+| David  |        2|    460|
+| Drew   |        1|    275|
+| Drew   |        2|    535|
+| TJ     |        1|    305|
+| TJ     |        2|    545|
 
 ``` r
 

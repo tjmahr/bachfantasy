@@ -25,8 +25,8 @@ scores
 Create some mock data to prototype for future plots.
 
 ```{r}
-scores$Ep2 <- sample(scores$Ep1, replace = TRUE)
-scores$Ep3 <- sample(scores$Ep2, replace = TRUE)
+# scores$Ep2 <- sample(scores$Ep1, replace = TRUE)
+# scores$Ep3 <- sample(scores$Ep2, replace = TRUE)
 ```
 
 
@@ -42,7 +42,9 @@ scores_long <- scores %>%
   # Convert to long format
   gather(Episode, Score, -Contestant) %>% 
   # Extract the number from the episode
-  extract(Episode, into = c("Episode"), regex = "(\\d+)", convert = TRUE)
+  extract(Episode, into = c("Episode"), regex = "(\\d+)", convert = TRUE) %>% 
+  # Replace NAs with 0s
+  replace_na(replace = list(Score = 0))
 
 # Add cumulative scores for each contestant
 scores_long <- scores_long %>% 
@@ -50,7 +52,6 @@ scores_long <- scores_long %>%
   group_by(Contestant) %>% 
   mutate(RunningScore = cumsum(Score)) %>% 
   ungroup()
-scores_long
 ```
 
 Create a long-format table of the rosters.
@@ -83,6 +84,8 @@ ggplot(league_sums) +
   theme_ipsum_rc() + 
   scale_x_continuous(breaks = seq_len(max(league$Episode))) +
   labs(title = "Running scores")
+
+knitr::kable(league_sums)
 
 ggplot(league) + 
   aes(x = Episode, y = Score, group = Contestant) + 
