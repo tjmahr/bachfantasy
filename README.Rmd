@@ -75,7 +75,7 @@ league_sums <- league %>%
 
 ## Plots
 
-```{r}
+```{r, warning = FALSE}
 library(hrbrthemes)
 
 ggplot(league_sums) + 
